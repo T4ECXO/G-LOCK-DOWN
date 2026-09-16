@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/GLockDown.Core/GLockDown.Core.csproj" />
+  <Project Path="src/GLockDown.Tray/GLockDown.Tray.csproj" />
+  <Project Path="src/GLockDown.Worker/GLockDown.Worker.csproj" />
+  <Project Path="tests/GLockDown.Tests/GLockDown.Tests.csproj" />
+</Solution>

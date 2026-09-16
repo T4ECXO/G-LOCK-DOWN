@@ -1,0 +1,107 @@
+Your daily limits
+
+Valorant gets a maximum of 3 hours per day.
+
+Valorant, Roblox’s website/app, and Steam/games share 4 hours per day combined.
+
+Valorant uses both timers simultaneously. For example, 3 hours of Valorant leaves 1 hour for Roblox or Steam. Playing Roblox for 2½ hours first leaves only 1½ hours available for Valorant.
+
+How the timer would work
+
+These are proposed counting rules:
+
+Valorant, Roblox, and Steam games count whenever the game is running, including menus and minimized windows.
+Roblox’s website counts while it is the active tab in the foreground browser.
+Using the Steam client counts, but leaving it in the background downloading updates does not.
+Sleep and powered-off time do not count.
+Running several restricted applications simultaneously consumes shared time once, not multiple times.
+
+Whether Steam’s website also counts is still undecided.
+
+Immediate closing and blocking
+
+When Valorant reaches 3 hours, the program would immediately close it and prevent reopening for the rest of the day.
+
+When the combined timer reaches 4 hours, it would close the restricted games and Steam, block Roblox’s website, and prevent reopening.
+
+There would be no extra time to finish a match. Warnings at 15, 5, and 1 minute remaining would help you prepare without extending the allowance.
+
+The target would be enforcement within roughly one second under normal conditions. Actual timing and the ability to terminate Valorant must be verified on Windows with Vanguard running.
+
+Automatic startup and background operation
+
+The main program would run as a Windows service, starting automatically with Windows.
+
+A separate tray icon/dashboard would show:
+
+Valorant time used and remaining.
+Shared time used and remaining.
+Which applications are currently being counted.
+Why something is blocked.
+When the next daily reset is due.
+
+Closing the dashboard would leave the background service running. Windows would be configured to restart the service after unexpected failure.
+
+Protection against stopping or deleting it
+
+The strongest practical setup requires you to use a standard Windows account, while someone you trust holds a separate administrator password.
+
+Program files, settings, and usage records would have protected permissions. Your everyday account would not be allowed to stop, disable, uninstall, or reconfigure the service. Windows supports restricting these service operations. Microsoft documentation
+
+Stronger application controls could also restrict unapproved browsers and copied game executables. That may mean needing administrator approval for some newly downloaded software.
+
+If you retain administrator access, you can ultimately disable the restriction. Giving the program the highest CPU priority would not change that.
+
+Roblox website protection
+
+The program would need browser integration to measure Roblox website usage and block it when the shared allowance expires.
+
+The design would cover new Roblox visits and tabs already open at the cutoff. Private browsing, guest profiles, and alternative browsers would need explicit handling so they cannot simply escape monitoring.
+
+For strong protection, the browser component would need a supported managed installation method. For example, on an ordinary Windows computer outside an Active Directory domain, Edge limits forced installation to extensions listed in its Add-ons store. That is a deployment requirement to resolve before claiming the extension cannot be disabled. Edge documentation
+
+Steam games and application detection
+
+Setup would identify Valorant, installed Roblox versions, Steam library folders, and the actual executable files used by your Steam games.
+
+The program would monitor those game processes directly. Closing Steam alone would not be treated as sufficient. Directly launched and offline Steam games would also need coverage.
+
+New installations and updates would trigger another check. Detection would use installation information and executable identity, rather than trusting only a filename.
+
+Saved usage, restarts, and daily resets
+
+Usage would be saved frequently in a protected local database, including when games start, stop, or reach a limit.
+
+Restarting the PC, switching game accounts, or reopening the program would not reset the allowance.
+
+The proposed reset is midnight in a timezone fixed during setup, with no unused time carried over. Sessions crossing midnight would be divided between the two days.
+
+Elapsed playtime would use a timer unaffected by ordinary clock adjustments. For stronger protection against date changes, new daily allowances would require trusted time validation. If a new day cannot be verified, the program would retain the existing budget until verification or administrator recovery.
+
+Failure handling and administrator recovery
+
+If usage records are damaged or monitoring stops working, the intended behavior would be to withhold access to the affected gaming targets until protection is restored.
+
+A separate administrator utility would support repairs, updates, authenticated overrides, and uninstalling the program.
+
+Recovery would be tested before enabling stronger restrictions. Uninstalling would remove the program’s own restrictions and restore settings it changed.
+
+Build and testing sequence
+
+First, confirm your Windows version, browser, account setup, reset timezone, and counting preferences.
+
+Next, build and test the two timers, overlap handling, saved usage, and daily resets.
+
+Then add game detection, immediate closing, relaunch restrictions, and Roblox website blocking.
+
+Finally, add stronger permissions and application controls, package the installer, and test:
+
+Both daily limits independently.
+Restarts, sleep, crashes, and midnight rollover.
+Clock changes and offline use.
+Attempts to close the dashboard, stop the service, or edit its files.
+Different browser profiles and already-open Roblox tabs.
+Steam games launched directly or offline.
+Game updates, performance, and administrator recovery.
+
+The remaining setup decisions are your Windows version, browser, daily reset timezone, who holds administrator access, and whether you accept the proposed counting rules.
