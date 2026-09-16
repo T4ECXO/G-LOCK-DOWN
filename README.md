@@ -39,6 +39,19 @@ dotnet run --project src/GLockDown.Worker -- --dry-run --once
 
 ## Install as a Windows service
 
+### Standalone Time Left dashboard
+
+Double-click `artifacts/G-LOCK-DOWN-Time-Left-v5/GLockDown.Tray.exe` to open
+the redesigned Windows dashboard without a terminal or a separate .NET install.
+It reads the installed service's public status and refreshes every second.
+The dark dashboard includes usage bars, both remaining allowances, a reset
+countdown, activity/status details, and a **Keep on top** toggle. Valorant's
+playable time is the smaller of its own allowance and the shared allowance.
+Older services use an estimated Bangkok-midnight reset schedule. Closing the
+window hides it in the system tray; **Exit tray** closes only the dashboard.
+
+### Service installation
+
 Installation immediately enables process-closing enforcement. First validate
 detection in dry-run mode. Then open PowerShell **as Administrator** and run:
 

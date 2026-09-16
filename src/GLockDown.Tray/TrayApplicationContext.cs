@@ -31,7 +31,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _timer = new System.Windows.Forms.Timer { Interval = 1000 };
         _timer.Tick += (_, _) => RefreshStatus();
         _timer.Start();
-        RefreshStatus();
+        ShowDashboard();
     }
 
     protected override void ExitThreadCore()

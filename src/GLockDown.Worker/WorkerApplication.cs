@@ -87,6 +87,7 @@ internal sealed class WorkerApplication
             {
                 UpdatedUtc = DateTimeOffset.UtcNow,
                 Day = status.Day,
+                NextResetUtc = ledger.GetNextResetUtc(),
                 ValorantUsedSeconds = status.ValorantUsed.TotalSeconds,
                 ValorantRemainingSeconds = status.ValorantRemaining.TotalSeconds,
                 SharedUsedSeconds = status.SharedUsed.TotalSeconds,

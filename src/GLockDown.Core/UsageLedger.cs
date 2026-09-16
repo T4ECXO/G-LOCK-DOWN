@@ -60,6 +60,12 @@ public sealed class UsageLedger
             sharedUsed >= _settings.SharedLimit);
     }
 
+    public DateTimeOffset GetNextResetUtc()
+    {
+        var localMidnight = State.Day.AddDays(1).ToDateTime(TimeOnly.MinValue);
+        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(localMidnight, _timeZone));
+    }
+
     private void EnsureInitialized(DateOnly localDay)
     {
         if (State.Day == default)

@@ -4,6 +4,7 @@ public sealed class RuntimeStatus
 {
     public DateTimeOffset UpdatedUtc { get; init; }
     public DateOnly Day { get; init; }
+    public DateTimeOffset NextResetUtc { get; init; }
     public double ValorantUsedSeconds { get; init; }
     public double ValorantRemainingSeconds { get; init; }
     public double SharedUsedSeconds { get; init; }
