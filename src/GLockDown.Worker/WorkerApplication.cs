@@ -16,6 +16,7 @@ internal sealed class WorkerApplication
         settings.Validate();
 
         var store = new JsonStateStore(statePath);
+        var lockDownStore = new FullLockDownStore(Path.Combine(options.DataDirectory, "full-lock-down.json"));
         var stateCorrupt = false;
         string? healthFailure = null;
         UsageState state;
@@ -67,7 +68,17 @@ internal sealed class WorkerApplication
             }
 
             string? blockReason = null;
-            if (stateCorrupt)
+            DateTimeOffset? lockDownUntil = null;
+            string? lockDownFailure = null;
+            try { lockDownUntil = lockDownStore.Load(); }
+            catch (InvalidDataException exception) { lockDownFailure = exception.Message; }
+            var fullLockDown = lockDownUntil > DateTimeOffset.UtcNow;
+            if (lockDownFailure is not null || fullLockDown)
+            {
+                blockReason = lockDownFailure ?? $"Full Lock-Down until {lockDownUntil:yyyy-MM-dd HH:mm:ss} UTC.";
+                Terminate(snapshot.AllSharedRestricted, blockReason, options.DryRun);
+            }
+            else if (stateCorrupt)
             {
                 blockReason = "Usage records are damaged; access is withheld until administrator repair.";
                 Terminate(snapshot.AllSharedRestricted, blockReason, options.DryRun);
@@ -92,9 +103,10 @@ internal sealed class WorkerApplication
                 ValorantRemainingSeconds = status.ValorantRemaining.TotalSeconds,
                 SharedUsedSeconds = status.SharedUsed.TotalSeconds,
                 SharedRemainingSeconds = status.SharedRemaining.TotalSeconds,
-                ValorantBlocked = stateCorrupt || status.ValorantBlocked,
-                SharedBlocked = stateCorrupt || status.SharedBlocked,
-                Healthy = !stateCorrupt,
+                ValorantBlocked = stateCorrupt || fullLockDown || lockDownFailure is not null || status.ValorantBlocked,
+                SharedBlocked = stateCorrupt || fullLockDown || lockDownFailure is not null || status.SharedBlocked,
+                FullLockDownUntilUtc = lockDownUntil,
+                Healthy = !stateCorrupt && lockDownFailure is null,
                 DryRun = options.DryRun,
                 ActiveApplications = snapshot.SharedProcesses
                     .Select(process => process.Name)

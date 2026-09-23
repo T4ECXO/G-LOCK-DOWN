@@ -11,6 +11,7 @@ public sealed class RuntimeStatus
     public double SharedRemainingSeconds { get; init; }
     public bool ValorantBlocked { get; init; }
     public bool SharedBlocked { get; init; }
+    public DateTimeOffset? FullLockDownUntilUtc { get; init; }
     public bool Healthy { get; init; } = true;
     public bool DryRun { get; init; }
     public string[] ActiveApplications { get; init; } = [];

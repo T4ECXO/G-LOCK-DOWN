@@ -10,14 +10,18 @@ internal sealed partial class ProcessDetector
     private readonly HashSet<string> _valorantNames;
     private readonly HashSet<string> _alwaysSharedNames;
     private readonly HashSet<string> _steamNames;
+    private readonly HashSet<string> _minecraftJavaRuntimePaths;
     private readonly HashSet<string> _ignoredNames;
     private readonly string[] _steamRoots;
 
     public ProcessDetector(LimiterSettings settings)
     {
         _valorantNames = Set(settings.ValorantProcessNames);
-        _alwaysSharedNames = Set(settings.RobloxProcessNames.Concat(settings.AdditionalSharedProcessNames));
+        _alwaysSharedNames = Set(settings.RobloxProcessNames
+            .Concat(settings.MinecraftProcessNames)
+            .Concat(settings.AdditionalSharedProcessNames));
         _steamNames = Set(settings.SteamClientProcessNames);
+        _minecraftJavaRuntimePaths = Set(settings.MinecraftJavaRuntimePaths.Select(Path.GetFullPath));
         _ignoredNames = Set(settings.IgnoredProcessNames);
         _steamRoots = DiscoverSteamRoots(settings.SteamLibraryPaths).ToArray();
     }
@@ -48,7 +52,7 @@ internal sealed partial class ProcessDetector
                     sharedActive.Add(detected);
                     allRestricted.Add(detected);
                 }
-                else if (_alwaysSharedNames.Contains(name) || IsSteamGame(path))
+                else if (_alwaysSharedNames.Contains(name) || IsMinecraftJava(name, path) || IsSteamGame(path))
                 {
                     sharedActive.Add(detected);
                     allRestricted.Add(detected);
@@ -72,6 +76,19 @@ internal sealed partial class ProcessDetector
         return _steamRoots.Any(root =>
             executablePath.StartsWith(root, StringComparison.OrdinalIgnoreCase) &&
             executablePath.Contains($"{Path.DirectorySeparatorChar}steamapps{Path.DirectorySeparatorChar}common{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool IsMinecraftJava(string name, string? executablePath)
+    {
+        if (executablePath is null ||
+            !name.Equals("javaw", StringComparison.OrdinalIgnoreCase) &&
+            !name.Equals("java", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var path = Path.GetFullPath(executablePath);
+        return _minecraftJavaRuntimePaths.Contains(path) ||
+            path.Contains($"{Path.DirectorySeparatorChar}.minecraft{Path.DirectorySeparatorChar}runtime{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains($"{Path.DirectorySeparatorChar}Minecraft Launcher{Path.DirectorySeparatorChar}runtime{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> DiscoverSteamRoots(IEnumerable<string> configured)

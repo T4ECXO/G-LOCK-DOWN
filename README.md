@@ -4,14 +4,16 @@ G-LOCK-DOWN is an early Windows usage-limiter implementation based on
 `work description.txt`. The current slice provides:
 
 - a three-hour Valorant allowance;
-- a four-hour shared Valorant/Roblox/Steam allowance;
+- a four-hour shared Valorant/Roblox/Minecraft/Steam allowance;
 - overlap-safe accounting (shared time advances only once);
 - Bangkok-midnight resets and atomic JSON persistence;
-- detection of Valorant, Roblox Player, the foreground Steam client, and games
-  inside discovered Steam libraries;
+- detection of Valorant, Roblox Player, Minecraft Bedrock, Minecraft Java using
+  the official launcher runtime, the foreground Steam client, and games inside
+  discovered Steam libraries;
 - configurable process exclusions for non-game Steam apps such as Wallpaper Engine;
 - 15, 5, and 1 minute console warnings;
 - process termination and relaunch blocking while a limit is exhausted;
+- timed Full Lock-Down for all tracked games and configured restricted apps;
 - fail-closed behavior if the usage record is unreadable;
 - a native Windows service host with automatic-restart configuration;
 - a tray dashboard and desktop warning notifications;
@@ -38,6 +40,43 @@ dotnet run --project src/GLockDown.Worker -- --dry-run --once
 ```
 
 ## Install as a Windows service
+
+### Full Lock-Down command
+
+Block Valorant, Roblox Player, Minecraft, Steam (including the background client),
+detected Steam games, and configured additional shared apps immediately for a specified
+number of minutes. For example, with a development worker already running:
+
+```powershell
+dotnet run --project src/GLockDown.Worker -- --full-lock-down 60
+```
+
+For the installed service, run this in an administrator PowerShell after updating
+the service to this version:
+
+```powershell
+& "$env:ProgramFiles\G-Lock-Down\GLockDown.Worker.exe" --data-dir "$env:ProgramData\G-Lock-Down" --full-lock-down 60
+```
+
+The command saves the deadline and exits; the worker must be running with the
+same data directory. Enforcement begins on its next scan (normally within one
+second). The dashboard displays the remaining lock-down time. Durations are
+whole minutes from 1 to 525600. Repeating the command can extend an existing
+lock-down but cannot shorten it. The deadline survives worker/PC restarts and
+daily resets; sleep and powered-off time count toward this duration. After expiry,
+normal daily limits apply without granting extra allowance. The deadline uses
+the computer's UTC clock, so administrator clock changes can affect expiry.
+
+Existing process exclusions still apply. This command does not block websites or
+untracked applications. A worker in dry-run mode only reports intended blocks;
+the command itself cannot be combined with `--dry-run`, `--once`, or `--service`.
+
+Minecraft Bedrock is recognized by the `Minecraft.Windows` process name. Java
+Edition is recognized when `javaw.exe` or `java.exe` runs from a `.minecraft\runtime`
+or `Minecraft Launcher\runtime` directory. For a custom launcher, add its Java
+executable's absolute path to `MinecraftJavaRuntimePaths` in `settings.json`.
+Minecraft uses the shared allowance and is blocked when it is exhausted or Full
+Lock-Down is active. Restart the worker after changing settings.
 
 ### Standalone Time Left dashboard
 

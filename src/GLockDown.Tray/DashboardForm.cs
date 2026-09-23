@@ -66,7 +66,7 @@ internal sealed class DashboardForm : Form
         layout.Controls.Add(intro, 0, 1);
 
         var cards = Row(50, 50);
-        _shared = CreateBudgetCard("SHARED ALLOWANCE", "Valorant + Roblox + Steam", Mint);
+        _shared = CreateBudgetCard("SHARED ALLOWANCE", "Valorant + Roblox + Minecraft + Steam", Mint);
         _valorant = CreateBudgetCard("VALORANT", "Also uses your shared allowance", Coral);
         _shared.Container.Margin = new Padding(0, 0, 8, 14);
         _valorant.Container.Margin = new Padding(8, 0, 0, 14);
@@ -150,14 +150,15 @@ internal sealed class DashboardForm : Form
             : "Your daily gaming allowance, at a glance.";
 
         var unavailable = !status.Healthy;
+        var fullLockDown = status.FullLockDownUntilUtc > now;
         var sharedBlocked = status.SharedBlocked || unavailable;
         var valorantBlocked = status.ValorantBlocked || sharedBlocked;
         SetBudget(_shared, status.SharedUsedSeconds, status.SharedRemainingSeconds,
             sharedBlocked ? 0 : status.SharedRemainingSeconds, sharedBlocked,
-            unavailable ? "Access withheld" : sharedBlocked ? "Daily limit reached" : "remaining across all tracked games");
+            unavailable ? "Access withheld" : fullLockDown ? "Full Lock-Down active" : sharedBlocked ? "Daily limit reached" : "remaining across all tracked games");
         SetBudget(_valorant, status.ValorantUsedSeconds, status.ValorantRemainingSeconds,
             valorantBlocked ? 0 : Math.Min(status.ValorantRemainingSeconds, status.SharedRemainingSeconds),
-            valorantBlocked, unavailable ? "Access withheld" : valorantBlocked ? "Daily limit reached"
+            valorantBlocked, unavailable ? "Access withheld" : fullLockDown ? "Full Lock-Down active" : valorantBlocked ? "Daily limit reached"
                 : status.SharedRemainingSeconds < status.ValorantRemainingSeconds
                     ? "playable time • shared limit applies" : "playable time remaining");
 
@@ -183,6 +184,8 @@ internal sealed class DashboardForm : Form
             : "Counting: " + string.Join(", ", status.ActiveApplications);
         _reason.Text = status.BlockReason ?? (stale ? "Check that the background service is running."
             : "Shared time counts once, even when multiple games are open.");
+        if (fullLockDown && !stale && status.Healthy)
+            _reason.Text = $"Full Lock-Down: {Clock((status.FullLockDownUntilUtc!.Value - now).TotalSeconds)} remaining";
         _reason.ForeColor = status.BlockReason is not null ? Coral : Muted;
         _tips.SetToolTip(_active, _active.Text);
         _tips.SetToolTip(_reason, _reason.Text);
